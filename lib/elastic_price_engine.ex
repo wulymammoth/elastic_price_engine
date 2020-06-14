@@ -19,6 +19,10 @@ defmodule ElasticPriceEngine do
     GenServer.cast(registry_name(key), :increment)
   end
 
+  def decrement(key) do
+    GenServer.cast(registry_name(key), :decrement)
+  end
+
   def count(key) do
     GenServer.call(registry_name(key), :count)
   end
@@ -37,9 +41,17 @@ defmodule ElasticPriceEngine do
   def init(state), do: {:ok, state}
 
   @impl true
-  def handle_cast(:increment, state = %{count: curr_cnt, price: curr_price}) do
-    new_price = update_price(curr_price, curr_cnt)
-    {:noreply, %{state | count: curr_cnt + 1, price: new_price}}
+  def handle_cast(:increment, state = %{count: count, price: price}) do
+    new_count = count + 1
+    new_price = if rem(count, 3) == 0, do: price + 1, else: price
+    {:noreply, %{state | count: new_count, price: new_price}}
+  end
+
+  @impl true
+  def handle_cast(:decrement, state = %{count: count, price: price}) do
+    new_count = count - 1
+    new_price = if rem(count, 3) == 0, do: price - 1, else: price
+    {:noreply, %{state | count: new_count, price: new_price}}
   end
 
   @impl true
@@ -50,10 +62,5 @@ defmodule ElasticPriceEngine do
   @impl true
   def handle_call(:price, _from, state = %{price: price}) do
     {:reply, price, state}
-  end
-
-  defp update_price(price, count) do
-    # as demand goes up, so does the price, as demand goes down, so does the price
-    if rem(count, 3) == 0, do: price + 1, else: price
   end
 end
