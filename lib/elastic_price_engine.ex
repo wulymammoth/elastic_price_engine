@@ -11,12 +11,16 @@ defmodule ElasticPriceEngine do
 
   defstruct count: 0, price: 0
 
-  def start_link(key, state \\ %__MODULE__{}) when is_binary(key) do
+  def start_link(key, state \\ %__MODULE__{}) do
     GenServer.start_link(__MODULE__, state, name: registry_name(key))
   end
 
-  def inc(key) do
-    GenServer.cast(registry_name(key), :inc)
+  def increment(key) do
+    GenServer.cast(registry_name(key), :increment)
+  end
+
+  def count(key) do
+    GenServer.call(registry_name(key), :count)
   end
 
   def price(key) do
@@ -30,17 +34,22 @@ defmodule ElasticPriceEngine do
   # server (callbacks)
 
   @impl true
-  def init(engine), do: {:ok, engine}
+  def init(state), do: {:ok, state}
 
   @impl true
-  def handle_cast(:inc, counter = %{count: curr_cnt, price: curr_price}) do
-    state = %{counter | count: curr_cnt + 1, price: update_price(curr_price, curr_cnt)}
-    {:noreply, state}
+  def handle_cast(:increment, state = %{count: curr_cnt, price: curr_price}) do
+    new_price = update_price(curr_price, curr_cnt)
+    {:noreply, %{state | count: curr_cnt + 1, price: new_price}}
   end
 
   @impl true
-  def handle_call(:price, _from, counter = %{price: price}) do
-    {:reply, price, counter}
+  def handle_call(:count, _from, state = %{count: count}) do
+    {:reply, count, state}
+  end
+
+  @impl true
+  def handle_call(:price, _from, state = %{price: price}) do
+    {:reply, price, state}
   end
 
   defp update_price(price, count) do
