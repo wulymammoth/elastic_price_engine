@@ -1,6 +1,13 @@
-defmodule ElasticPriceEngine.Strategy do
-  @type state() :: %{amount: Money.t()}
+defprotocol ElasticPriceEngine.Strategy do
+  @doc "common interface for pulling the amount whether the state is simple or complex"
+  def amount(state)
 
-  @callback increment(state()) :: state()
-  @callback decrement(state()) :: state()
+  @doc false
+  def count(state)
+
+  @doc false
+  def increment(state)
+
+  @doc false
+  def decrement(state)
 end

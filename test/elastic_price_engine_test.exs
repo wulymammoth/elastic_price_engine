@@ -7,12 +7,14 @@ defmodule ElasticPriceEngineTest do
   @key 123
 
   setup_all do
-    {:ok, _} = Registry.start_link(keys: :unique, name: EPE.Registry)
+    {:ok, registry} = Registry.start_link(keys: :unique, name: EPE.Registry)
+    on_exit make_ref(), fn -> Process.exit(registry, :kill) end
     :ok
   end
 
   setup do
-    {:ok, _} = Engine.start_link(@key, ElasticPriceEngine.CounterStrategy)
+    {:ok, engine} = Engine.start_link(@key, ElasticPriceEngine.ViewCountStrategy)
+    on_exit make_ref(), fn -> Process.exit(engine, :kill) end
     :ok
   end
 
@@ -29,9 +31,11 @@ defmodule ElasticPriceEngineTest do
     assert Engine.amount(@key) == usd(1)
   end
 
+  # TODO
   test "get" do
   end
 
+  # TODO
   test "perform" do
   end
 

@@ -9,6 +9,8 @@ defmodule ElasticPriceEngine do
 
   use GenServer
 
+  alias __MODULE__.Strategy
+
   # client
 
   def start_link(key, strategy) do
@@ -38,13 +40,11 @@ defmodule ElasticPriceEngine do
 
   @impl true
   def handle_cast(action, state) do
-    strategy = state.__struct__
-    new_state = apply(strategy, action, [state])
-    {:noreply, new_state}
+    {:noreply, apply(Strategy, action, [state])}
   end
 
   @impl true
-  def handle_call(:amount, _from, state = %{amount: amount}) do
-    {:reply, amount, state}
+  def handle_call(:amount, _from, state) do
+    {:reply, Strategy.amount(state), state}
   end
 end
