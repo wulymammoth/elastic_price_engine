@@ -1,7 +1,7 @@
 defmodule ElasticPriceEngine.Supervisor do
   use Supervisor
 
-  @registry_name EPERegistry
+  @registry_name EPE.Registry
   @supervisor_name EPE.Supervisor
 
   def start_link(opts \\ []) do
