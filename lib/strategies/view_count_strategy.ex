@@ -3,7 +3,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
   defstruct views: 0, price: Money.new(0, :USD)
 
-  defimpl ElasticPriceEngine.Strategy do
+  defimpl ElasticPriceEngine.PricingStrategy do
     @dollar Money.new(100, :USD)
 
     def amount(%{price: amount}), do: amount

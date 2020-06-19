@@ -9,7 +9,7 @@ defmodule ElasticPriceEngine do
 
   use GenServer
 
-  alias __MODULE__.Strategy
+  alias __MODULE__.PricingStrategy
 
   # client
 
@@ -40,11 +40,11 @@ defmodule ElasticPriceEngine do
 
   @impl true
   def handle_cast(action, state) do
-    {:noreply, apply(Strategy, action, [state])}
+    {:noreply, apply(PricingStrategy, action, [state])}
   end
 
   @impl true
   def handle_call(:amount, _from, state) do
-    {:reply, Strategy.amount(state), state}
+    {:reply, PricingStrategy.amount(state), state}
   end
 end

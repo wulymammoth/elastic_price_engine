@@ -2,7 +2,7 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
   use ExUnit.Case
   doctest ElasticPriceEngine.ViewCountStrategy
 
-  alias ElasticPriceEngine.Strategy
+  alias ElasticPriceEngine.PricingStrategy, as: Strategy
   alias ElasticPriceEngine.ViewCountStrategy, as: Data
 
   describe "increment" do
