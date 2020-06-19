@@ -4,7 +4,8 @@ defmodule ElasticPriceEngineTest do
 
   alias ElasticPriceEngine, as: Engine
 
-  @key 123
+  @id 123
+  @pricing_strategy ElasticPriceEngine.ViewCountStrategy
 
   setup_all do
     {:ok, registry} = Registry.start_link(keys: :unique, name: EPE.Registry)
@@ -13,22 +14,23 @@ defmodule ElasticPriceEngineTest do
   end
 
   setup do
-    {:ok, engine} = Engine.start_link(@key, ElasticPriceEngine.ViewCountStrategy)
+    opts = [increment: 1, decrement: 1, floor: 5, ceil: 100]
+    {:ok, engine} = Engine.start_link(@id, @pricing_strategy, opts)
     on_exit make_ref(), fn -> Process.exit(engine, :kill) end
     :ok
   end
 
   test "amount increases after count goes up" do
-    assert Engine.amount(@key) == usd(0)
-    for _ <- 1..3, do: Engine.increment(@key)
-    assert Engine.amount(@key) == usd(1)
+    assert Engine.amount(@id) == usd(0)
+    for _ <- 1..3, do: Engine.increment(@id)
+    assert Engine.amount(@id) == usd(1)
   end
 
   test "amount decreases after count goes down" do
-    for _ <- 1..6, do: Engine.increment(@key)
-    assert Engine.amount(@key) == usd(2)
-    for _ <- 1..3, do: Engine.decrement(@key)
-    assert Engine.amount(@key) == usd(1)
+    for _ <- 1..6, do: Engine.increment(@id)
+    assert Engine.amount(@id) == usd(2)
+    for _ <- 1..3, do: Engine.decrement(@id)
+    assert Engine.amount(@id) == usd(1)
   end
 
   # TODO

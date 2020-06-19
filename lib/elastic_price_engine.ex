@@ -13,7 +13,7 @@ defmodule ElasticPriceEngine do
 
   # client
 
-  def start_link(key, strategy) do
+  def start_link(key, strategy, _opts \\ []) do
     GenServer.start_link(__MODULE__, struct(strategy), name: registry_name(key))
   end
 
