@@ -19,8 +19,9 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
     def decrement(state = %{views: 0}), do: state
 
     def decrement(state = %{views: views, price: price}) do
+      views = views - 1
       price = if rem(views, 3) == 0, do: Money.subtract(price, @dollar), else: price
-      %{state | views: views - 1, price: price}
+      %{state | views: views, price: price}
     end
   end
 end

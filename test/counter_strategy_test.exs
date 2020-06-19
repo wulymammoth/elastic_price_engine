@@ -25,7 +25,7 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
     end
 
     test "amount" do
-      assert %Data{views: 6, price: usd(2)} |> Strategy.decrement() |> Strategy.amount() == usd(1)
+      assert %Data{views: 7, price: usd(2)} |> Strategy.decrement() |> Strategy.amount() == usd(1)
       assert %Data{views: 5, price: usd(2)} |> Strategy.decrement() |> Strategy.amount() == usd(2)
       assert %Data{views: 0, price: usd(0)} |> Strategy.decrement() |> Strategy.amount() == usd(0)
     end
