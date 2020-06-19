@@ -4,6 +4,8 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
   defstruct views: 0, price: Money.new(0, :USD)
 
   defimpl ElasticPriceEngine.PricingStrategy do
+    import Money, only: [add: 2, subtract: 2]
+
     @dollar Money.new(100, :USD)
 
     def amount(%{price: amount}), do: amount
@@ -12,7 +14,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
     def increment(state = %{views: views, price: price}) do
       views = views + 1
-      price = if rem(views, 3) == 0, do: Money.add(price, @dollar), else: price
+      price = if rem(views, 3) == 0, do: add(price, @dollar), else: price
       %{state | views: views, price: price}
     end
 
@@ -20,7 +22,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
     def decrement(state = %{views: views, price: price}) do
       views = views - 1
-      price = if rem(views, 3) == 0, do: Money.subtract(price, @dollar), else: price
+      price = if rem(views, 3) == 0, do: subtract(price, @dollar), else: price
       %{state | views: views, price: price}
     end
   end
