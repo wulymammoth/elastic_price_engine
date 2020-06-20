@@ -1,15 +1,16 @@
 defmodule ElasticPriceEngine.ViewCountStrategy do
   @moduledoc false
 
-  @options_schema [
-    ceiling: [type: :pos_integer],
-    currency: [default: :USD, type: :atom],
-    decrement: [required: true, type: :pos_integer],
-    floor: [type: :pos_integer, default: 0],
-    increment: [required: true, type: :pos_integer],
-    price: [default: 0],
-    step: [default: 1, type: :pos_integer]
-  ]
+  use ElasticPriceEngine.Strategy,
+    schema: [
+      ceiling: [type: :pos_integer],
+      currency: [default: :USD, type: :atom],
+      decrement: [required: true, type: :pos_integer],
+      floor: [type: :pos_integer, default: 0],
+      increment: [required: true, type: :pos_integer],
+      price: [default: 0],
+      step: [default: 1, type: :pos_integer]
+    ]
 
   defstruct ceiling: nil,
             currency: :USD,
@@ -19,8 +20,6 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
             price: 0,
             step: 1,
             views: 0
-
-  def options_schema(), do: @options_schema
 
   defimpl ElasticPriceEngine.PricingStrategy do
     import Money, only: [add: 2, subtract: 2]
