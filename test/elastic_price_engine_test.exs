@@ -33,13 +33,5 @@ defmodule ElasticPriceEngineTest do
     assert Engine.amount(@id) == usd(1)
   end
 
-  # TODO
-  test "get" do
-  end
-
-  # TODO
-  test "perform" do
-  end
-
   def usd(amt), do: Money.parse!(amt, :USD)
 end
