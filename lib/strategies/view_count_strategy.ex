@@ -47,7 +47,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
              views: views
            }
          ) do
-      if (rem(views, step) == 0 and is_nil(ceiling)) || (ceiling && price < ceiling) do
+      if rem(views, step) == 0 and (is_nil(ceiling) || (ceiling && price < ceiling)) do
         add(price, inc, currency)
       else
         price
