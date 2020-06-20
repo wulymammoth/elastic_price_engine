@@ -11,10 +11,18 @@ defmodule ElasticPriceEngine do
 
   alias __MODULE__.PricingStrategy
 
+  import NimbleOptions, only: [validate: 2]
+
   # client
 
-  def start_link(key, strategy, _opts \\ []) do
-    GenServer.start_link(__MODULE__, struct(strategy), name: registry_name(key))
+  def start_link(key, strategy, opts \\ []) do
+    case validate(opts, strategy.options_schema()) do
+      {:ok, opts} ->
+        GenServer.start_link(__MODULE__, struct(strategy, opts), name: registry_name(key))
+
+      {:error, error} ->
+        error
+    end
   end
 
   def increment(key) do

@@ -14,7 +14,7 @@ defmodule ElasticPriceEngineTest do
   end
 
   setup do
-    opts = [increment: 1, decrement: 1, floor: 5, ceil: 100]
+    opts = [increment: 100, decrement: 100, step: 3]
     {:ok, engine} = Engine.start_link(@id, @pricing_strategy, opts)
     on_exit make_ref(), fn -> Process.exit(engine, :kill) end
     :ok
