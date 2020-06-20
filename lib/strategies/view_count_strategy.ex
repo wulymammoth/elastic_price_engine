@@ -22,7 +22,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
     def increment(%{views: views} = state) do
       views = views + 1
-      price = price_delta(:+, %{state | views: views})
+      price = price_change(:+, %{state | views: views})
       %{state | views: views, price: price}
     end
 
@@ -30,13 +30,13 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
     def decrement(state = %{views: views}) do
       views = views - 1
-      price = price_delta(:-, %{state | views: views})
+      price = price_change(:-, %{state | views: views})
       %{state | views: views, price: price}
     end
 
-    defp price_delta(:+, %{price: price, views: 0}), do: price
+    defp price_change(:+, %{price: price, views: 0}), do: price
 
-    defp price_delta(
+    defp price_change(
            :+,
            %{
              ceiling: ceiling,
@@ -54,9 +54,9 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       end
     end
 
-    defp price_delta(:-, %{floor: floor, price: price}) when price == floor, do: price
+    defp price_change(:-, %{floor: floor, price: price}) when price == floor, do: price
 
-    defp price_delta(
+    defp price_change(
            :-,
            %{currency: currency, decrement: dec, price: price, step: step, views: views}
          ) do
