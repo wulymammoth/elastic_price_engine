@@ -3,9 +3,9 @@ defmodule ElasticPriceEngineTest do
   doctest ElasticPriceEngine
 
   alias ElasticPriceEngine, as: Engine
+  alias ElasticPriceEngine.ViewCountStrategy
 
   @id 123
-  @pricing_strategy ElasticPriceEngine.ViewCountStrategy
 
   setup_all do
     {:ok, registry} = Registry.start_link(keys: :unique, name: EPE.Registry)
@@ -15,7 +15,7 @@ defmodule ElasticPriceEngineTest do
 
   setup do
     opts = [increment: 100, decrement: 100, step: 3]
-    {:ok, engine} = Engine.start_link(@id, @pricing_strategy, opts)
+    {:ok, engine} = Engine.start(@id, ViewCountStrategy, opts)
     on_exit make_ref(), fn -> Process.exit(engine, :kill) end
     :ok
   end

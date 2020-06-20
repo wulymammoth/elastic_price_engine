@@ -15,10 +15,12 @@ defmodule ElasticPriceEngine do
 
   # client
 
-  def start_link(key, strategy, opts \\ []) do
+  def start(key, strategy, opts \\ []) do
     case validate(opts, strategy.options_schema()) do
       {:ok, opts} ->
-        GenServer.start_link(__MODULE__, struct(strategy, opts), name: registry_name(key))
+        state = struct(strategy, opts)
+        name  = registry_name(key)
+        GenServer.start_link(__MODULE__, state, name: name)
 
       {:error, error} ->
         error
@@ -37,9 +39,7 @@ defmodule ElasticPriceEngine do
     GenServer.call(registry_name(key), :amount)
   end
 
-  defp registry_name(key) do
-    {:via, Registry, {EPE.Registry, key}}
-  end
+  defp registry_name(key), do: {:via, Registry, {EPE.Registry, key}}
 
   # server (callbacks)
 
