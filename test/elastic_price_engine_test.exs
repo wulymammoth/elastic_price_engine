@@ -9,14 +9,14 @@ defmodule ElasticPriceEngineTest do
 
   setup_all do
     {:ok, registry} = Registry.start_link(keys: :unique, name: EPE.Registry)
-    on_exit make_ref(), fn -> Process.exit(registry, :kill) end
+    on_exit(make_ref(), fn -> Process.exit(registry, :kill) end)
     :ok
   end
 
   setup do
     opts = [increment: 100, decrement: 100, step: 3]
     {:ok, engine} = Engine.start(@id, ViewCountStrategy, opts)
-    on_exit make_ref(), fn -> Process.exit(engine, :kill) end
+    on_exit(make_ref(), fn -> Process.exit(engine, :kill) end)
     :ok
   end
 

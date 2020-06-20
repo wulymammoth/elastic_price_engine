@@ -9,20 +9,12 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       floor: [type: :pos_integer, default: 0],
       increment: [required: true, type: :pos_integer],
       price: [default: 0],
-      step: [default: 1, type: :pos_integer]
+      step: [default: 1, type: :pos_integer],
+      views: [default: 0, type: :pos_integer]
     ]
 
-  defstruct ceiling: nil,
-            currency: :USD,
-            decrement: nil,
-            floor: 0,
-            increment: nil,
-            price: 0,
-            step: 1,
-            views: 0
-
   defimpl ElasticPriceEngine.PricingStrategy do
-    use ElasticPriceEngine.Strategy.Helpers
+    import ElasticPriceEngine.Strategy.Helpers, only: [add: 3, money: 2, subtract: 3]
 
     def amount(%{currency: currency, price: amount}), do: money(amount, currency)
 
@@ -68,7 +60,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
            :-,
            %{currency: currency, decrement: dec, price: price, step: step, views: views}
          ) do
-           if rem(views, step) == 0, do: subtract(price, dec, currency), else: price
+      if rem(views, step) == 0, do: subtract(price, dec, currency), else: price
     end
   end
 end

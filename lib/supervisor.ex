@@ -12,8 +12,9 @@ defmodule ElasticPriceEngine.Supervisor do
   def init(:ok) do
     children = [
       {Registry, keys: :unique, name: @registry_name},
-      {DynamicSupervisor, strategy: :one_for_one, name: @supervisor_name},
+      {DynamicSupervisor, strategy: :one_for_one, name: @supervisor_name}
     ]
+
     options = [strategy: :one_for_one, name: @supervisor_name]
     Supervisor.init(children, options)
   end
