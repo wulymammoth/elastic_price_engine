@@ -22,9 +22,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
             views: 0
 
   defimpl ElasticPriceEngine.PricingStrategy do
-    import Money, only: [add: 2, subtract: 2]
-
-    defdelegate money(price, currency), to: Money, as: :new
+    use ElasticPriceEngine.Strategy.Helpers
 
     def amount(%{currency: currency, price: amount}), do: money(amount, currency)
 
@@ -58,8 +56,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
            }
          ) do
       if (rem(views, step) == 0 and is_nil(ceiling)) || (ceiling && price < ceiling) do
-        [price, delta] = [money(price, currency), money(inc, currency)]
-        price |> add(delta) |> Map.get(:amount)
+        add(price, inc, currency)
       else
         price
       end
@@ -71,12 +68,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
            :-,
            %{currency: currency, decrement: dec, price: price, step: step, views: views}
          ) do
-      if rem(views, step) == 0 do
-        [price, delta] = [money(price, currency), money(dec, currency)]
-        price |> subtract(delta) |> Map.get(:amount)
-      else
-        price
-      end
+           if rem(views, step) == 0, do: subtract(price, dec, currency), else: price
     end
   end
 end
