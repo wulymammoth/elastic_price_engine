@@ -9,11 +9,7 @@ defmodule ElasticPriceEngine.Strategy do
 
   defp fields(schema) do
     Enum.reduce(schema, [], fn {field, options}, fields ->
-      if Keyword.has_key?(options, :default) do
-        Keyword.put(fields, field, options[:default])
-      else
-        Keyword.put(fields, field, nil)
-      end
+      Keyword.put(fields, field, options[:default])
     end)
   end
 
