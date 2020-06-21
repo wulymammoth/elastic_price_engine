@@ -1,11 +1,11 @@
 defmodule ElasticPriceEngineTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest ElasticPriceEngine
 
   alias ElasticPriceEngine, as: Engine
   alias ElasticPriceEngine.ViewCountStrategy
 
-  @id 123
+  @id 0
 
   setup_all do
     {:ok, registry} = Registry.start_link(keys: :unique, name: EPE.Registry)
@@ -15,9 +15,17 @@ defmodule ElasticPriceEngineTest do
 
   setup do
     opts = [increment: 100, decrement: 100, step: 3]
-    {:ok, engine} = Engine.start(@id, ViewCountStrategy, opts)
-    on_exit(make_ref(), fn -> Process.exit(engine, :kill) end)
+    {:ok, _} = Engine.start(@id, ViewCountStrategy, opts)
     :ok
+  end
+
+  test "multiple IDs" do
+    opts = [increment: 100, decrement: 100, step: 3]
+    ids = 1..2_000
+    for id <- ids, do: {:ok, _} = Engine.start(id, ViewCountStrategy, opts)
+    for id <- ids, do: for(_ <- 1..150, do: Engine.increment(id))
+    for id <- ids, do: assert(Engine.amount(id) == usd(50))
+    for id <- ids, do: Engine.stop(id)
   end
 
   test "amount increases after count goes up" do

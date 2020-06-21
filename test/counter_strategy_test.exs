@@ -1,5 +1,5 @@
 defmodule ElasticPriceEngine.ViewCountStrategyTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest ElasticPriceEngine.ViewCountStrategy
 
   alias ElasticPriceEngine.PricingStrategy, as: Strategy
