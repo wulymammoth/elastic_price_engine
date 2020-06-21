@@ -27,7 +27,7 @@ defmodule ElasticPriceEngineTest do
 
   test "multiple IDs" do
     opts = [increment: 100, decrement: 100, step: 3]
-    ids = 1..2_000
+    ids = 1..1_000
     for id <- ids, do: {:ok, _} = Engine.start(id, ViewCountStrategy, opts)
     for id <- ids, do: for(_ <- 1..150, do: Engine.increment(id))
     for id <- ids, do: assert(Engine.amount(id) == usd(50))

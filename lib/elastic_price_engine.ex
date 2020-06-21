@@ -13,25 +13,27 @@ defmodule ElasticPriceEngine do
 
   # client
 
-  def start(key, strategy, opts \\ []) do
+  def start(id, strategy, opts \\ []) do
     case NimbleOptions.validate(opts, strategy.options_schema()) do
       {:ok, opts} ->
-        GenServer.start_link(__MODULE__, struct(strategy, opts), name: registry_name(key))
+        state = struct(strategy, opts)
+        reg_key = registry_key(id)
+        GenServer.start_link(__MODULE__, state, name: reg_key)
 
       {:error, %NimbleOptions.ValidationError{} = err} ->
         {:error, Exception.message(err)}
     end
   end
 
-  def increment(key), do: GenServer.cast(registry_name(key), :increment)
+  def increment(id), do: GenServer.cast(registry_key(id), :increment)
 
-  def decrement(key), do: GenServer.cast(registry_name(key), :decrement)
+  def decrement(id), do: GenServer.cast(registry_key(id), :decrement)
 
-  def amount(key), do: GenServer.call(registry_name(key), :amount)
+  def amount(id), do: GenServer.call(registry_key(id), :amount)
 
-  def stop(key), do: GenServer.stop(registry_name(key), :normal)
+  def stop(id), do: GenServer.stop(registry_key(id), :normal)
 
-  defp registry_name(key), do: {:via, Registry, {EPE.Registry, key}}
+  defp registry_key(id), do: {:via, Registry, {EPE.Registry, id}}
 
   # server (callbacks)
 
