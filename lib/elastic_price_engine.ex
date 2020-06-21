@@ -9,27 +9,31 @@ defmodule ElasticPriceEngine do
 
   use GenServer
 
+  alias __MODULE__.PricingStrategy
+
   # client
 
-  def start_link(key, strategy) do
-    GenServer.start_link(__MODULE__, struct(strategy), name: registry_name(key))
+  def start(id, strategy, opts \\ []) do
+    case NimbleOptions.validate(opts, strategy.options_schema()) do
+      {:ok, opts} ->
+        state = struct(strategy, opts)
+        reg_key = registry_key(id)
+        GenServer.start_link(__MODULE__, state, name: reg_key)
+
+      {:error, %NimbleOptions.ValidationError{} = err} ->
+        {:error, Exception.message(err)}
+    end
   end
 
-  def increment(key) do
-    GenServer.cast(registry_name(key), :increment)
-  end
+  def increment(id), do: GenServer.cast(registry_key(id), :increment)
 
-  def decrement(key) do
-    GenServer.cast(registry_name(key), :decrement)
-  end
+  def decrement(id), do: GenServer.cast(registry_key(id), :decrement)
 
-  def amount(key) do
-    GenServer.call(registry_name(key), :amount)
-  end
+  def amount(id), do: GenServer.call(registry_key(id), :amount)
 
-  defp registry_name(key) do
-    {:via, Registry, {EPE.Registry, key}}
-  end
+  def stop(id), do: GenServer.stop(registry_key(id), :normal)
+
+  defp registry_key(id), do: {:via, Registry, {EPE.Registry, id}}
 
   # server (callbacks)
 
@@ -38,13 +42,14 @@ defmodule ElasticPriceEngine do
 
   @impl true
   def handle_cast(action, state) do
-    strategy = state.__struct__
-    new_state = apply(strategy, action, [state])
-    {:noreply, new_state}
+    {:noreply, apply(PricingStrategy, action, [state])}
   end
 
   @impl true
-  def handle_call(:amount, _from, state = %{amount: amount}) do
-    {:reply, amount, state}
+  def handle_call(:amount, _from, state) do
+    {:reply, PricingStrategy.amount(state), state}
   end
+
+  @impl true
+  def terminate(reason, _), do: reason
 end
