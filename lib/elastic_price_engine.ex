@@ -14,10 +14,10 @@ defmodule ElasticPriceEngine do
   # client
 
   def start(key, strategy, opts \\ []) do
-    {:ok, opts} = NimbleOptions.validate(opts, strategy.options_schema())
-    state = struct(strategy, opts)
-    name = registry_name(key)
-    GenServer.start_link(__MODULE__, state, name: name)
+    case NimbleOptions.validate(opts, strategy.options_schema()) do
+      {:ok, opts} -> GenServer.start_link(__MODULE__, struct(strategy, opts), name: registry_name(key))
+      {:error, %NimbleOptions.ValidationError{} = err} -> {:error, Exception.message(err)}
+    end
   end
 
   def increment(key) do
