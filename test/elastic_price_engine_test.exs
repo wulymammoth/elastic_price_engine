@@ -19,6 +19,12 @@ defmodule ElasticPriceEngineTest do
     :ok
   end
 
+  test "invalid options" do
+    expected_message = "required option :decrement not found, received options: [:currency]"
+    opts = []
+    assert {:error, expected_message} == Engine.start(@id, ViewCountStrategy, opts)
+  end
+
   test "multiple IDs" do
     opts = [increment: 100, decrement: 100, step: 3]
     ids = 1..2_000
