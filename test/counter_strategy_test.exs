@@ -2,7 +2,7 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
   use ExUnit.Case, async: true
   doctest ElasticPriceEngine.ViewCountStrategy
 
-  alias ElasticPriceEngine.PricingStrategy, as: Strategy
+  alias ElasticPriceEngine.Reducer
   alias ElasticPriceEngine.ViewCountStrategy, as: Schema
 
   setup_all do
@@ -14,14 +14,14 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
 
   describe "increment" do
     test "count", %{state: state} do
-      assert state |> Strategy.increment() |> Strategy.count() == 1
-      assert %{state | views: 87} |> Strategy.increment() |> Strategy.count() == 88
+      assert state |> Reducer.increment() |> Reducer.count() == 1
+      assert %{state | views: 87} |> Reducer.increment() |> Reducer.count() == 88
     end
 
     test "amount", %{state: state} do
-      assert %{state | views: 0} |> Strategy.increment() |> Strategy.amount() == usd(0)
+      assert %{state | views: 0} |> Reducer.increment() |> Reducer.amount() == usd(0)
 
-      assert %{state | views: 8, price: 8600} |> Strategy.increment() |> Strategy.amount() ==
+      assert %{state | views: 8, price: 8600} |> Reducer.increment() |> Reducer.amount() ==
                usd(87)
     end
 
@@ -29,48 +29,48 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
       state =
         %{state | views: 165, price: 5400, ceiling: 5500}
         # 55
-        |> Strategy.increment()
+        |> Reducer.increment()
         # 56
-        |> Strategy.increment()
+        |> Reducer.increment()
         # 57
-        |> Strategy.increment()
+        |> Reducer.increment()
 
-      assert Strategy.count(state) == 168
-      assert Strategy.amount(state) == usd(55)
+      assert Reducer.count(state) == 168
+      assert Reducer.amount(state) == usd(55)
     end
   end
 
   describe "decrement" do
     test "count", %{state: state} do
-      assert %{state | views: 1} |> Strategy.decrement() |> Strategy.count() == 0
-      assert %{state | views: 88} |> Strategy.decrement() |> Strategy.count() == 87
-      assert %{state | views: 0} |> Strategy.decrement() |> Strategy.count() == 0
+      assert %{state | views: 1} |> Reducer.decrement() |> Reducer.count() == 0
+      assert %{state | views: 88} |> Reducer.decrement() |> Reducer.count() == 87
+      assert %{state | views: 0} |> Reducer.decrement() |> Reducer.count() == 0
     end
 
     test "amount", %{state: state} do
-      assert %{state | views: 7, price: 200} |> Strategy.decrement() |> Strategy.amount() ==
+      assert %{state | views: 7, price: 200} |> Reducer.decrement() |> Reducer.amount() ==
                usd(1)
 
-      assert %{state | views: 5, price: 200} |> Strategy.decrement() |> Strategy.amount() ==
+      assert %{state | views: 5, price: 200} |> Reducer.decrement() |> Reducer.amount() ==
                usd(2)
 
-      assert %{state | views: 0, price: 0} |> Strategy.decrement() |> Strategy.amount() == usd(0)
+      assert %{state | views: 0, price: 0} |> Reducer.decrement() |> Reducer.amount() == usd(0)
     end
 
     test "floor", %{state: state} do
       state =
         %{state | floor: 100, views: 4, price: 200}
         # 3
-        |> Strategy.decrement()
+        |> Reducer.decrement()
         # 2
-        |> Strategy.decrement()
+        |> Reducer.decrement()
         # 1
-        |> Strategy.decrement()
+        |> Reducer.decrement()
         # 1
-        |> Strategy.decrement()
+        |> Reducer.decrement()
 
-      assert Strategy.count(state) == 0
-      assert Strategy.amount(state) == usd(1)
+      assert Reducer.count(state) == 0
+      assert Reducer.amount(state) == usd(1)
     end
   end
 

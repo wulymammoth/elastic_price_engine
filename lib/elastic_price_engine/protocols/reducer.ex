@@ -1,4 +1,4 @@
-defprotocol ElasticPriceEngine.PricingStrategy do
+defprotocol ElasticPriceEngine.Reducer do
   @doc "common interface for pulling the amount whether the state is simple or complex"
   def amount(state)
 

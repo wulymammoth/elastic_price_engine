@@ -1,7 +1,7 @@
 defmodule ElasticPriceEngine.ViewCountStrategy do
   @moduledoc false
 
-  use ElasticPriceEngine.Strategy,
+  use ElasticPriceEngine.PricingStrategy,
     schema: [
       ceiling: [type: :pos_integer],
       currency: [default: :USD, type: :atom],
@@ -13,9 +13,8 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       views: [default: 0, type: :pos_integer]
     ]
 
-  defimpl ElasticPriceEngine.PricingStrategy do
-    import ElasticPriceEngine.Strategy.Helpers, only: [add: 3, money: 2, subtract: 3]
 
+  defimpl ElasticPriceEngine.Reducer do
     def amount(%{currency: currency, price: amount}), do: money(amount, currency)
 
     def count(%{views: count}), do: count
