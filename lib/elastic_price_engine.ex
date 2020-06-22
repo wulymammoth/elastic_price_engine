@@ -1,10 +1,7 @@
 defmodule ElasticPriceEngine do
   @moduledoc """
-  an elastic amount engine server is started with:
-  1. an increment strategy - that defines when the amount should go up and when it should go down
-  2. an decrement strategy - that defines when the amount should go down and when it should go down
-
-  - strategies define increment, decrements, as well as thresholds like a floor and ceiling
+  An engine is just a stateful genserver performing the duties of a pricing
+  strategy for one identifier
   """
 
   use GenServer
