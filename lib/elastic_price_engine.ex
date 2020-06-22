@@ -31,6 +31,8 @@ defmodule ElasticPriceEngine do
 
   def amount(id), do: GenServer.call(registry_key(id), :amount)
 
+  def count(id), do: GenServer.call(registry_key(id), :count)
+
   def stop(id), do: GenServer.stop(registry_key(id), :normal)
 
   defp registry_key(id), do: {:via, Registry, {EPE.Registry, id}}
@@ -48,6 +50,11 @@ defmodule ElasticPriceEngine do
   @impl true
   def handle_call(:amount, _from, state) do
     {:reply, Reducer.amount(state), state}
+  end
+
+  @impl true
+  def handle_call(:count, _from, state) do
+    {:reply, Reducer.count(state), state}
   end
 
   @impl true
