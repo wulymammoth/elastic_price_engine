@@ -8,8 +8,7 @@ defmodule ElasticPriceEngineTest do
   @id 0
 
   setup_all do
-    {:ok, registry} = Registry.start_link(keys: :unique, name: EPE.Registry)
-    on_exit(make_ref(), fn -> Process.exit(registry, :kill) end)
+    {:ok, _} = ElasticPriceEngine.Supervisor.start_link()
     :ok
   end
 

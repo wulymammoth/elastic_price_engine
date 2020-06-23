@@ -13,7 +13,6 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       views: [default: 0, type: :pos_integer]
     ]
 
-
   defimpl ElasticPriceEngine.Reducer do
     def amount(%{currency: currency, price: amount}), do: money(amount, currency)
 
