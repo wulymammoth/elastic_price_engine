@@ -9,7 +9,7 @@ defmodule ElasticPriceEngine.Application do
     children = [
       # Starts a worker by calling: ElasticPriceEngine.Worker.start_link(arg)
       # {ElasticPriceEngine.Worker, arg}
-      {ElasticPriceEngine.Supervisor, []}
+      ElasticPriceEngine.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
