@@ -13,10 +13,6 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       views: [default: 0, type: :pos_integer]
     ]
 
-  def validate(options) do
-    NimbleOptions.validate(options, __MODULE__.options_schema())
-  end
-
   defimpl ElasticPriceEngine.Reducer do
     def amount(%{currency: currency, price: amount}), do: money(amount, currency)
 
