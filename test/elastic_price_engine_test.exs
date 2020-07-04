@@ -3,47 +3,50 @@ defmodule ElasticPriceEngineTest do
   doctest ElasticPriceEngine
 
   alias ElasticPriceEngine, as: Engine
-  alias ElasticPriceEngine.ViewCountStrategy
-
-  @id 0
-
-  setup_all do
-    {:ok, _} = ElasticPriceEngine.Supervisor.start_link()
-    :ok
-  end
+  alias ElasticPriceEngine.ViewCountStrategy, as: Strategy
 
   setup do
-    opts = [increment: 100, decrement: 100, step: 3]
-    {:ok, _} = Engine.start(@id, ViewCountStrategy, opts)
-    :ok
+    {:ok, strategy_opts} = Strategy.validate(increment: 100, decrement: 100, step: 3)
+    state = struct(Strategy, strategy_opts)
+    {:ok, pid} = ElasticPriceEngine.start_link(state)
+    %{pid: pid}
   end
 
-  test "invalid options" do
-    expected_message = "required option :decrement not found, received options: [:currency]"
-    opts = []
-    assert {:error, expected_message} == Engine.start(@id, ViewCountStrategy, opts)
+  describe "ElasticPriceEngine.increment/0" do
+    test "increment", %{pid: pid} do
+      for _ <- 1..5, do: Engine.increment(pid)
+      assert Engine.count(pid) == 5
+    end
   end
 
-  test "multiple IDs" do
-    opts = [increment: 100, decrement: 100, step: 3]
-    ids = 1..1_000
-    for id <- ids, do: {:ok, _} = Engine.start(id, ViewCountStrategy, opts)
-    for id <- ids, do: for(_ <- 1..150, do: Engine.increment(id))
-    for id <- ids, do: assert(Engine.amount(id) == usd(50))
-    for id <- ids, do: Engine.stop(id)
+  describe "ElasticPriceEngine.decrement/1" do
+    test "decrement", %{pid: pid} do
+      for _ <- 1..3, do: Engine.increment(pid)
+      assert Engine.count(pid) == 3
+      Engine.decrement(pid)
+      assert Engine.count(pid) == 2
+    end
   end
 
-  test "amount increases after count goes up" do
-    assert Engine.amount(@id) == usd(0)
-    for _ <- 1..3, do: Engine.increment(@id)
-    assert Engine.amount(@id) == usd(1)
+  describe "ElasticPriceEngine.amount/1" do
+    test "increases after count goes up", %{pid: pid} do
+      assert Engine.amount(pid) == usd(0)
+      for _ <- 1..3, do: Engine.increment(pid)
+      assert Engine.amount(pid) == usd(1)
+    end
   end
 
-  test "amount decreases after count goes down" do
-    for _ <- 1..6, do: Engine.increment(@id)
-    assert Engine.amount(@id) == usd(2)
-    for _ <- 1..3, do: Engine.decrement(@id)
-    assert Engine.amount(@id) == usd(1)
+  describe "ElasticPriceEngine.count/1" do
+    test "initial count is zero", %{pid: pid} do
+      assert Engine.count(pid) == 0
+    end
+  end
+
+  describe "ElasticPriceEngine.stop/1" do
+    test "engine is no longer active", %{pid: pid} do
+      Engine.stop(pid)
+      assert Process.alive?(pid) == false
+    end
   end
 
   def usd(amt), do: Money.parse!(amt, :USD)

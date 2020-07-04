@@ -8,41 +8,21 @@ defmodule ElasticPriceEngine do
 
   alias __MODULE__.Reducer
 
-  @supervisor __MODULE__.EngineSupervisor
-  @registry __MODULE__.EngineRegistry
-
   # client
 
-  def start(id, strategy, opts \\ []) do
-    DynamicSupervisor.start_child(
-      @supervisor,
-      {__MODULE__, id: id, strategy: strategy, opts: opts}
-    )
+  def start_link(state, opts \\ []) do
+    GenServer.start_link(__MODULE__, state, opts)
   end
 
-  def start_link(args) do
-    case NimbleOptions.validate(args[:opts], args[:strategy].options_schema()) do
-      {:ok, opts} ->
-        state = struct(args[:strategy], opts)
-        reg_key = registry_key(args[:id])
-        GenServer.start_link(__MODULE__, state, name: reg_key)
+  def increment(id), do: GenServer.cast(id, :increment)
 
-      {:error, %NimbleOptions.ValidationError{} = err} ->
-        {:error, Exception.message(err)}
-    end
-  end
+  def decrement(id), do: GenServer.cast(id, :decrement)
 
-  def increment(id), do: GenServer.cast(registry_key(id), :increment)
+  def amount(id), do: GenServer.call(id, :amount)
 
-  def decrement(id), do: GenServer.cast(registry_key(id), :decrement)
+  def count(id), do: GenServer.call(id, :count)
 
-  def amount(id), do: GenServer.call(registry_key(id), :amount)
-
-  def count(id), do: GenServer.call(registry_key(id), :count)
-
-  def stop(id), do: GenServer.stop(registry_key(id), :normal)
-
-  defp registry_key(id), do: {:via, Registry, {@registry, id}}
+  def stop(id), do: GenServer.stop(id, :normal)
 
   # server (callbacks)
 
