@@ -8,21 +8,49 @@ defmodule ElasticPriceEngine do
 
   alias __MODULE__.Reducer
 
+  require Logger
+
   # client
 
-  def start_link(state, opts \\ []) do
-    GenServer.start_link(__MODULE__, state, opts)
+  @registry __MODULE__.EngineReg
+
+  def child_spec(opts) do
+    id = Keyword.get(opts, :id, __MODULE__)
+
+    %{
+      id: "#{__MODULE__}_#{id}",
+      start: {__MODULE__, :start_link, [opts[:state], [id: id]]},
+      restart: :transient
+    }
   end
 
-  def increment(id), do: GenServer.cast(id, :increment)
+  def start_link(state, opts \\ []) do
+    case GenServer.start_link(__MODULE__, state, name: via_tuple(opts[:id])) do
+      {:ok, pid} ->
+        {:ok, pid}
 
-  def decrement(id), do: GenServer.cast(id, :decrement)
+      {:error, {:already_started, pid}} ->
+        Logger.info("already started at #{inspect(pid)}, returning :ignore")
+        :ignore
+    end
+  end
 
-  def amount(id), do: GenServer.call(id, :amount)
+  def increment(id) when is_pid(id), do: GenServer.cast(id, :increment)
+  def increment(id), do: GenServer.cast(via_tuple(id), :increment)
 
-  def count(id), do: GenServer.call(id, :count)
+  def decrement(id) when is_pid(id), do: GenServer.cast(id, :decrement)
+  def decrement(id), do: GenServer.cast(via_tuple(id), :decrement)
 
-  def stop(id), do: GenServer.stop(id, :normal)
+  def amount(id) when is_pid(id), do: GenServer.call(id, :amount)
+  def amount(id), do: GenServer.call(via_tuple(id), :amount)
+
+  def count(id) when is_pid(id), do: GenServer.call(id, :count)
+  def count(id), do: GenServer.call(via_tuple(id), :count)
+
+  def stop(id) when is_pid(id), do: GenServer.stop(id, :normal)
+  def stop(id), do: GenServer.stop(via_tuple(id), :normal)
+
+  defp via_tuple(id), do: {:via, Registry, {@registry, id}}
 
   # server (callbacks)
 
