@@ -9,9 +9,7 @@ defmodule ElasticPriceEngine.PricingStrategy do
 
       defstruct unquote(fields(opts[:schema]))
 
-      def options_schema(), do: unquote(opts[:schema])
-
-      def validate(options), do: validate(options, __MODULE__.options_schema())
+      def validate(options), do: validate(options, unquote(opts[:schema]))
     end
   end
 
