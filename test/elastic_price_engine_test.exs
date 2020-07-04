@@ -49,5 +49,34 @@ defmodule ElasticPriceEngineTest do
     end
   end
 
-  def usd(amt), do: Money.parse!(amt, :USD)
+  describe "increment" do
+    setup do
+      start_engine = fn ->
+        {:ok, valid_opts} = Strategy.validate(increment: 100, decrement: 100, step: 3)
+        state = struct(Strategy, valid_opts)
+
+        DynamicSupervisor.start_child(
+          Engine.EngineSup,
+          ElasticPriceEngine.child_spec(id: 0, state: state)
+        )
+      end
+
+      {:ok, pid} =
+        with {:ok, _} <- start_supervised({Registry, keys: :unique, name: Engine.EngineReg}),
+             {:ok, _} <- start_supervised({DynamicSupervisor, name: Engine.EngineSup}) do
+          start_engine.()
+        else
+          {:error, {{:already_started, _}, _}} -> start_engine.()
+        end
+
+      %{id: pid}
+    end
+
+    test "with registry", %{id: id} do
+      for _ <- 1..5, do: Engine.increment(id)
+      assert Engine.count(id) == 5
+    end
+  end
+
+  defp usd(amt), do: Money.parse!(amt, :USD)
 end
