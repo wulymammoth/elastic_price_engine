@@ -6,10 +6,19 @@ defmodule ElasticPriceEngineTest do
   alias ElasticPriceEngine.ViewCountStrategy, as: Strategy
 
   setup do
-    {:ok, strategy_opts} = Strategy.validate(increment: 100, decrement: 100, step: 3)
+    {:ok, strategy_opts} = Strategy.validate(id: "foo", increment: 100, decrement: 100, step: 3)
     state = struct(Strategy, strategy_opts)
     {:ok, pid} = ElasticPriceEngine.start_link(state)
     %{pid: pid}
+  end
+
+  test "engine hibernates after being idle" do
+    idle_time = 5 # milliseconds
+    {:ok, strategy_opts} = Strategy.validate(id: "bar", increment: 100, decrement: 100, step: 3)
+    state = struct(Strategy, strategy_opts)
+    {:ok, pid} = ElasticPriceEngine.start_link(state, hibernate_after: idle_time)
+    Process.sleep(idle_time)
+    assert :erlang.process_info(pid, :current_function) == {:current_function, {:erlang, :hibernate, 3}}
   end
 
   describe "ElasticPriceEngine.increment/0" do
@@ -50,16 +59,16 @@ defmodule ElasticPriceEngineTest do
   end
 
   describe "increment" do
-    @id 0
+    @id "baz"
 
     setup do
       start_engine = fn ->
-        {:ok, valid_opts} = Strategy.validate(increment: 100, decrement: 100, step: 3)
+        {:ok, valid_opts} = Strategy.validate(id: @id, increment: 100, decrement: 100, step: 3)
         state = struct(Strategy, valid_opts)
 
         DynamicSupervisor.start_child(
           Engine.EngineSup,
-          ElasticPriceEngine.child_spec(id: @id, state: state)
+          ElasticPriceEngine.child_spec(state)
         )
       end
 
