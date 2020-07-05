@@ -1,11 +1,11 @@
 defmodule ElasticPriceEngine.PricingStrategy do
-  alias ElasticPriceEngine, as: EPE
+  alias ElasticPriceEngine, as: Engine
 
   import NimbleOptions, only: [validate: 2]
 
   defmacro __using__(opts) do
     quote do
-      import EPE.PricingStrategyHelpers, only: [add: 3, money: 2, subtract: 3]
+      import Engine.PricingStrategyHelpers, only: [add: 3, money: 2, subtract: 3]
 
       defstruct unquote(fields(opts[:schema]))
 
