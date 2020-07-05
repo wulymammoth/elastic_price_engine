@@ -5,19 +5,16 @@ defmodule ElasticPriceEngineTest do
   alias ElasticPriceEngine, as: Engine
   alias ElasticPriceEngine.ViewCountStrategy, as: Strategy
 
+  @default_strategy_opts [increment: 100, decrement: 100, step: 3]
+
   setup do
-    {:ok, strategy_opts} = Strategy.validate(id: "foo", increment: 100, decrement: 100, step: 3)
-    state = struct(Strategy, strategy_opts)
-    {:ok, pid} = ElasticPriceEngine.start_link(state)
+    {:ok, pid} = ElasticPriceEngine.start_link(state("foo"))
     %{pid: pid}
   end
 
   test "engine hibernates after being idle" do
-    # milliseconds
     idle_time = 5
-    {:ok, strategy_opts} = Strategy.validate(id: "bar", increment: 100, decrement: 100, step: 3)
-    state = struct(Strategy, strategy_opts)
-    {:ok, pid} = ElasticPriceEngine.start_link(state, hibernate_after: idle_time)
+    {:ok, pid} = ElasticPriceEngine.start_link(state("bar"), hibernate_after: idle_time)
     Process.sleep(idle_time)
 
     assert :erlang.process_info(pid, :current_function) ==
@@ -63,16 +60,10 @@ defmodule ElasticPriceEngineTest do
 
   describe "increment" do
     setup do
-      id =  "baz"
+      id = "baz"
 
       start_engine = fn ->
-        {:ok, valid_opts} = Strategy.validate(id: id, increment: 100, decrement: 100, step: 3)
-        state = struct(Strategy, valid_opts)
-
-        DynamicSupervisor.start_child(
-          Engine.EngineSup,
-          ElasticPriceEngine.child_spec(state)
-        )
+        DynamicSupervisor.start_child(Engine.EngineSup, ElasticPriceEngine.child_spec(state(id)))
       end
 
       {:ok, _pid} =
@@ -90,6 +81,15 @@ defmodule ElasticPriceEngineTest do
       for _ <- 1..5, do: Engine.increment(id)
       assert Engine.count(id) == 5
     end
+  end
+
+  defp state(id) do
+    {:ok, strategy_opts} =
+      @default_strategy_opts
+      |> Keyword.merge(id: id)
+      |> Strategy.validate()
+
+    struct(Strategy, strategy_opts)
   end
 
   defp usd(amt), do: Money.parse!(amt, :USD)
