@@ -13,7 +13,6 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       views: [default: 0, type: :pos_integer]
     ]
 
-
   defimpl ElasticPriceEngine.Reducer do
     def amount(%{currency: currency, price: amount}), do: money(amount, currency)
 
@@ -21,7 +20,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
     def increment(%{views: views} = state) do
       views = views + 1
-      price = price_change(:+, %{state | views: views})
+      price = price_change(:increment, %{state | views: views})
       %{state | views: views, price: price}
     end
 
@@ -29,14 +28,14 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
     def decrement(state = %{views: views}) do
       views = views - 1
-      price = price_change(:-, %{state | views: views})
+      price = price_change(:decrement, %{state | views: views})
       %{state | views: views, price: price}
     end
 
-    defp price_change(:+, %{price: price, views: 0}), do: price
+    defp price_change(:increment, %{price: price, views: 0}), do: price
 
     defp price_change(
-           :+,
+           :increment,
            %{
              ceiling: ceiling,
              currency: currency,
@@ -53,10 +52,10 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       end
     end
 
-    defp price_change(:-, %{floor: floor, price: price}) when price == floor, do: price
+    defp price_change(:decrement, %{floor: floor, price: price}) when price == floor, do: price
 
     defp price_change(
-           :-,
+           :decrement,
            %{currency: currency, decrement: dec, price: price, step: step, views: views}
          ) do
       if rem(views, step) == 0, do: subtract(price, dec, currency), else: price

@@ -1,41 +1,56 @@
 defmodule ElasticPriceEngine do
   @moduledoc """
-  an elastic amount engine server is started with:
-  1. an increment strategy - that defines when the amount should go up and when it should go down
-  2. an decrement strategy - that defines when the amount should go down and when it should go down
-
-  - strategies define increment, decrements, as well as thresholds like a floor and ceiling
+  An engine is just a stateful genserver performing the duties of a pricing
+  strategy for one identifier
   """
 
   use GenServer
 
   alias __MODULE__.Reducer
 
+  require Logger
+
   # client
 
-  def start(id, strategy, opts \\ []) do
-    case NimbleOptions.validate(opts, strategy.options_schema()) do
-      {:ok, opts} ->
-        state = struct(strategy, opts)
-        reg_key = registry_key(id)
-        GenServer.start_link(__MODULE__, state, name: reg_key)
+  @registry __MODULE__.EngineReg
 
-      {:error, %NimbleOptions.ValidationError{} = err} ->
-        {:error, Exception.message(err)}
+  def child_spec(opts) do
+    id = Keyword.get(opts, :id, __MODULE__)
+
+    %{
+      id: "#{__MODULE__}_#{id}",
+      start: {__MODULE__, :start_link, [opts[:state], [id: id]]},
+      restart: :transient
+    }
+  end
+
+  def start_link(state, opts \\ []) do
+    case GenServer.start_link(__MODULE__, state, name: via_tuple(opts[:id])) do
+      {:ok, pid} ->
+        {:ok, pid}
+
+      {:error, {:already_started, pid}} ->
+        Logger.info("already started at #{inspect(pid)}, returning :ignore")
+        :ignore
     end
   end
 
-  def increment(id), do: GenServer.cast(registry_key(id), :increment)
+  def increment(id) when is_pid(id), do: GenServer.cast(id, :increment)
+  def increment(id), do: GenServer.cast(via_tuple(id), :increment)
 
-  def decrement(id), do: GenServer.cast(registry_key(id), :decrement)
+  def decrement(id) when is_pid(id), do: GenServer.cast(id, :decrement)
+  def decrement(id), do: GenServer.cast(via_tuple(id), :decrement)
 
-  def amount(id), do: GenServer.call(registry_key(id), :amount)
+  def amount(id) when is_pid(id), do: GenServer.call(id, :amount)
+  def amount(id), do: GenServer.call(via_tuple(id), :amount)
 
-  def count(id), do: GenServer.call(registry_key(id), :count)
+  def count(id) when is_pid(id), do: GenServer.call(id, :count)
+  def count(id), do: GenServer.call(via_tuple(id), :count)
 
-  def stop(id), do: GenServer.stop(registry_key(id), :normal)
+  def stop(id) when is_pid(id), do: GenServer.stop(id, :normal)
+  def stop(id), do: GenServer.stop(via_tuple(id), :normal)
 
-  defp registry_key(id), do: {:via, Registry, {EPE.Registry, id}}
+  defp via_tuple(id), do: {:via, Registry, {@registry, id}}
 
   # server (callbacks)
 

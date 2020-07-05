@@ -6,9 +6,7 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
   alias ElasticPriceEngine.ViewCountStrategy, as: Schema
 
   setup_all do
-    {:ok, opts} =
-      NimbleOptions.validate([decrement: 100, increment: 100, step: 3], Schema.options_schema())
-
+    {:ok, opts} = Schema.validate([decrement: 100, increment: 100, step: 3])
     [state: struct(Schema, opts)]
   end
 
