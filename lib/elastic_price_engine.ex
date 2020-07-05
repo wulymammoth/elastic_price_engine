@@ -24,15 +24,7 @@ defmodule ElasticPriceEngine do
 
   def start_link(state = %{id: id}, opts \\ []) do
     opts = Keyword.merge(opts, name: opts[:name] || via_tuple(id))
-
-    case GenServer.start_link(__MODULE__, state, opts) do
-      {:ok, pid} ->
-        {:ok, pid}
-
-      {:error, {:already_started, pid}} ->
-        Logger.info("already started at #{inspect(pid)}, returning :ignore")
-        :ignore
-    end
+    GenServer.start_link(__MODULE__, state, opts)
   end
 
   def increment(id) when is_pid(id), do: GenServer.cast(id, :increment)

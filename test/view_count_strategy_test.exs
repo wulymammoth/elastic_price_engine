@@ -6,7 +6,7 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
   alias ElasticPriceEngine.ViewCountStrategy, as: Schema
 
   setup_all do
-    {:ok, opts} = Schema.validate([id: "foo", decrement: 100, increment: 100, step: 3])
+    {:ok, opts} = Schema.validate(id: "foo", decrement: 100, increment: 100, step: 3)
     [state: struct(Schema, opts)]
   end
 

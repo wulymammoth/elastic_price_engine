@@ -13,12 +13,15 @@ defmodule ElasticPriceEngineTest do
   end
 
   test "engine hibernates after being idle" do
-    idle_time = 5 # milliseconds
+    # milliseconds
+    idle_time = 5
     {:ok, strategy_opts} = Strategy.validate(id: "bar", increment: 100, decrement: 100, step: 3)
     state = struct(Strategy, strategy_opts)
     {:ok, pid} = ElasticPriceEngine.start_link(state, hibernate_after: idle_time)
     Process.sleep(idle_time)
-    assert :erlang.process_info(pid, :current_function) == {:current_function, {:erlang, :hibernate, 3}}
+
+    assert :erlang.process_info(pid, :current_function) ==
+             {:current_function, {:erlang, :hibernate, 3}}
   end
 
   describe "ElasticPriceEngine.increment/0" do
