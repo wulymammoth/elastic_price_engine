@@ -62,11 +62,11 @@ defmodule ElasticPriceEngineTest do
   end
 
   describe "increment" do
-    @id "baz"
-
     setup do
+      id =  "baz"
+
       start_engine = fn ->
-        {:ok, valid_opts} = Strategy.validate(id: @id, increment: 100, decrement: 100, step: 3)
+        {:ok, valid_opts} = Strategy.validate(id: id, increment: 100, decrement: 100, step: 3)
         state = struct(Strategy, valid_opts)
 
         DynamicSupervisor.start_child(
@@ -83,12 +83,12 @@ defmodule ElasticPriceEngineTest do
           {:error, {{:already_started, _}, _}} -> start_engine.()
         end
 
-      :ok
+      %{id: id}
     end
 
-    test "with registry" do
-      for _ <- 1..5, do: Engine.increment(@id)
-      assert Engine.count(@id) == 5
+    test "with registry", %{id: id} do
+      for _ <- 1..5, do: Engine.increment(id)
+      assert Engine.count(id) == 5
     end
   end
 
