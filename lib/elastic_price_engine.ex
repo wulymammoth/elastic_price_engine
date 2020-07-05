@@ -8,8 +8,6 @@ defmodule ElasticPriceEngine do
 
   alias __MODULE__.Reducer
 
-  require Logger
-
   # client
 
   @registry __MODULE__.EngineReg
