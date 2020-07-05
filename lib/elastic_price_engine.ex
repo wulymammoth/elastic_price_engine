@@ -14,18 +14,16 @@ defmodule ElasticPriceEngine do
 
   @registry __MODULE__.EngineReg
 
-  def child_spec(opts) do
-    id = Keyword.get(opts, :id, __MODULE__)
-
+  def child_spec(state = %{id: id}) do
     %{
       id: "#{__MODULE__}_#{id}",
-      start: {__MODULE__, :start_link, [opts[:state], [id: id]]},
+      start: {__MODULE__, :start_link, [state]},
       restart: :transient
     }
   end
 
-  def start_link(state, opts \\ []) do
-    case GenServer.start_link(__MODULE__, state, name: via_tuple(opts[:id])) do
+  def start_link(state = %{id: id}) do
+    case GenServer.start_link(__MODULE__, state, name: via_tuple(id)) do
       {:ok, pid} ->
         {:ok, pid}
 
