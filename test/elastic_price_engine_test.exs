@@ -8,13 +8,13 @@ defmodule ElasticPriceEngineTest do
   @default_strategy_opts [increment: 100, decrement: 100, step: 3]
 
   setup do
-    {:ok, pid} = ElasticPriceEngine.start_link(state("foo"))
+    {:ok, pid} = Engine.start_link(state("foo"))
     %{pid: pid}
   end
 
   test "engine hibernates after being idle" do
     idle_time = 5
-    {:ok, pid} = ElasticPriceEngine.start_link(state("bar"), hibernate_after: idle_time)
+    {:ok, pid} = Engine.start_link(state("bar"), hibernate_after: idle_time)
     Process.sleep(idle_time)
 
     assert :erlang.process_info(pid, :current_function) ==
@@ -62,16 +62,12 @@ defmodule ElasticPriceEngineTest do
     setup do
       id = "baz"
 
-      start_engine = fn ->
-        DynamicSupervisor.start_child(Engine.EngineSup, ElasticPriceEngine.child_spec(state(id)))
-      end
-
       {:ok, _pid} =
         with {:ok, _} <- start_supervised({Registry, keys: :unique, name: Engine.EngineReg}),
              {:ok, _} <- start_supervised({DynamicSupervisor, name: Engine.EngineSup}) do
-          start_engine.()
+          start_engine(id)
         else
-          {:error, {{:already_started, _}, _}} -> start_engine.()
+          {:error, {{:already_started, _}, _}} -> start_engine(id)
         end
 
       %{id: id}
@@ -81,6 +77,10 @@ defmodule ElasticPriceEngineTest do
       for _ <- 1..5, do: Engine.increment(id)
       assert Engine.count(id) == 6
     end
+  end
+
+  defp start_engine(id) do
+    DynamicSupervisor.start_child(Engine.EngineSup, Engine.child_spec(state(id)))
   end
 
   defp state(id) do
