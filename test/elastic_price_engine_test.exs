@@ -24,16 +24,16 @@ defmodule ElasticPriceEngineTest do
   describe "ElasticPriceEngine.increment/0" do
     test "increment", %{pid: pid} do
       for _ <- 1..5, do: Engine.increment(pid)
-      assert Engine.count(pid) == 5
+      assert Engine.count(pid) == 6
     end
   end
 
   describe "ElasticPriceEngine.decrement/1" do
     test "decrement", %{pid: pid} do
       for _ <- 1..3, do: Engine.increment(pid)
-      assert Engine.count(pid) == 3
+      assert Engine.count(pid) == 4
       Engine.decrement(pid)
-      assert Engine.count(pid) == 2
+      assert Engine.count(pid) == 3
     end
   end
 
@@ -47,7 +47,7 @@ defmodule ElasticPriceEngineTest do
 
   describe "ElasticPriceEngine.count/1" do
     test "initial count is zero", %{pid: pid} do
-      assert Engine.count(pid) == 0
+      assert Engine.count(pid) == 1
     end
   end
 
@@ -79,7 +79,7 @@ defmodule ElasticPriceEngineTest do
 
     test "with registry", %{id: id} do
       for _ <- 1..5, do: Engine.increment(id)
-      assert Engine.count(id) == 5
+      assert Engine.count(id) == 6
     end
   end
 

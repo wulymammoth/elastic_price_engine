@@ -11,7 +11,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       increment: [required: true, type: :pos_integer],
       price: [default: 0],
       step: [default: 1, type: :pos_integer],
-      views: [default: 0, type: :pos_integer]
+      views: [default: 1, type: :pos_integer]
     ]
 
   defimpl ElasticPriceEngine.Reducer do
