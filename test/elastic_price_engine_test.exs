@@ -84,12 +84,10 @@ defmodule ElasticPriceEngineTest do
   end
 
   defp state(id) do
-    {:ok, strategy_opts} =
-      @default_strategy_opts
-      |> Keyword.merge(id: id)
-      |> Strategy.validate()
-
-    struct(Strategy, strategy_opts)
+    @default_strategy_opts
+    |> Keyword.merge(id: id)
+    |> Strategy.validate!()
+    |> (&struct(Strategy, &1)).()
   end
 
   defp usd(amt), do: Money.parse!(amt, :USD)
