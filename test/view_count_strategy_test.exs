@@ -12,26 +12,34 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
 
   describe "increment" do
     test "count", %{state: state} do
-      assert state |> Reducer.increment() |> Reducer.count() == 1
-      assert %{state | views: 87} |> Reducer.increment() |> Reducer.count() == 88
+      state
+      |> Reducer.increment()
+      |> Reducer.count()
+      |> (& assert &1 == 1).()
+
+      %{state | views: 87}
+      |> Reducer.increment()
+      |> Reducer.count()
+      |> (& assert &1 == 88).()
     end
 
     test "amount", %{state: state} do
-      assert %{state | views: 0} |> Reducer.increment() |> Reducer.amount() == usd(0)
+      %{state | views: 0}
+      |> Reducer.increment()
+      |> Reducer.amount()
+      |> (& assert &1 == usd(0)).()
 
-      assert %{state | views: 8, price: 8600} |> Reducer.increment() |> Reducer.amount() ==
-               usd(87)
+      %{state | views: 8, price: 8600}
+      |> Reducer.increment()
+      |> Reducer.amount()
+      |> (& assert &1 == usd(87)).()
     end
 
     test "ceiling", %{state: state} do
       state =
-        %{state | views: 165, price: 5400, ceiling: 5500}
-        # 55
-        |> Reducer.increment()
-        # 56
-        |> Reducer.increment()
-        # 57
-        |> Reducer.increment()
+        Enum.reduce(1..3, %{state | views: 165, price: 5400, ceiling: 5500}, fn _, st ->
+          Reducer.increment(st)
+        end)
 
       assert Reducer.count(state) == 168
       assert Reducer.amount(state) == usd(55)
@@ -40,32 +48,44 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
 
   describe "decrement" do
     test "count", %{state: state} do
-      assert %{state | views: 1} |> Reducer.decrement() |> Reducer.count() == 0
-      assert %{state | views: 88} |> Reducer.decrement() |> Reducer.count() == 87
-      assert %{state | views: 0} |> Reducer.decrement() |> Reducer.count() == 0
+      %{state | views: 1}
+      |> Reducer.decrement()
+      |> Reducer.count()
+      |> (& assert &1 == 0).()
+
+      %{state | views: 88}
+      |> Reducer.decrement()
+      |> Reducer.count()
+      |> (& assert &1 == 87).()
+
+      %{state | views: 0}
+      |> Reducer.decrement()
+      |> Reducer.count()
+      |> (& assert &1 == 0).()
     end
 
     test "amount", %{state: state} do
-      assert %{state | views: 7, price: 200} |> Reducer.decrement() |> Reducer.amount() ==
-               usd(1)
+      %{state | views: 7, price: 200}
+      |> Reducer.decrement()
+      |> Reducer.amount()
+      |> (& assert &1 == usd(1)).()
 
-      assert %{state | views: 5, price: 200} |> Reducer.decrement() |> Reducer.amount() ==
-               usd(2)
+      %{state | views: 5, price: 200}
+      |> Reducer.decrement()
+      |> Reducer.amount()
+      |> (& assert &1 == usd(2)).()
 
-      assert %{state | views: 0, price: 0} |> Reducer.decrement() |> Reducer.amount() == usd(0)
+      %{state | views: 0, price: 0}
+      |> Reducer.decrement()
+      |> Reducer.amount()
+      |> (& assert &1 == usd(0)).()
     end
 
     test "floor", %{state: state} do
       state =
-        %{state | floor: 100, views: 4, price: 200}
-        # 3
-        |> Reducer.decrement()
-        # 2
-        |> Reducer.decrement()
-        # 1
-        |> Reducer.decrement()
-        # 1
-        |> Reducer.decrement()
+        Enum.reduce(1..4, %{state | floor: 100, views: 4, price: 200}, fn _, st ->
+          Reducer.decrement(st)
+        end)
 
       assert Reducer.count(state) == 0
       assert Reducer.amount(state) == usd(1)
