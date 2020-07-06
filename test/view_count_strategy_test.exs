@@ -1,5 +1,7 @@
 defmodule ElasticPriceEngine.ViewCountStrategyTest do
   use ExUnit.Case, async: true
+  use TestHelper
+
   doctest ElasticPriceEngine.ViewCountStrategy
 
   alias ElasticPriceEngine.Reducer
@@ -19,24 +21,24 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
       state
       |> Reducer.increment()
       |> Reducer.count()
-      |> (&assert(&1 == 2)).()
+      |> is(2)
 
       %{state | views: 87}
       |> Reducer.increment()
       |> Reducer.count()
-      |> (&assert(&1 == 88)).()
+      |> is(88)
     end
 
     test "amount", %{state: state} do
       %{state | views: 0}
       |> Reducer.increment()
       |> Reducer.amount()
-      |> (&assert(&1 == usd(0))).()
+      |> is(usd(0))
 
       %{state | views: 8, price: 8600}
       |> Reducer.increment()
       |> Reducer.amount()
-      |> (&assert(&1 == usd(87))).()
+      |> is(usd(87))
     end
 
     test "ceiling", %{state: state} do
@@ -55,34 +57,34 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
       %{state | views: 1}
       |> Reducer.decrement()
       |> Reducer.count()
-      |> (&assert(&1 == 0)).()
+      |> is(0)
 
       %{state | views: 88}
       |> Reducer.decrement()
       |> Reducer.count()
-      |> (&assert(&1 == 87)).()
+      |> is(87)
 
       %{state | views: 0}
       |> Reducer.decrement()
       |> Reducer.count()
-      |> (&assert(&1 == 0)).()
+      |> is(0)
     end
 
     test "amount", %{state: state} do
       %{state | views: 7, price: 200}
       |> Reducer.decrement()
       |> Reducer.amount()
-      |> (&assert(&1 == usd(1))).()
+      |> is(usd(1))
 
       %{state | views: 5, price: 200}
       |> Reducer.decrement()
       |> Reducer.amount()
-      |> (&assert(&1 == usd(2))).()
+      |> is(usd(2))
 
       %{state | views: 0, price: 0}
       |> Reducer.decrement()
       |> Reducer.amount()
-      |> (&assert(&1 == usd(0))).()
+      |> is(usd(0))
     end
 
     test "floor", %{state: state} do
