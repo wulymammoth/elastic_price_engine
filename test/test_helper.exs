@@ -5,8 +5,8 @@ defmodule TestHelper do
     quote do
       import ExUnit.Assertions, only: [assert: 1]
 
-      def has(result, field, expectation) do
-        assert Map.get(result, field) == expectation
+      def has(result, expectation) when is_function(expectation) do
+        assert expectation.(result) == true
         result
       end
 
