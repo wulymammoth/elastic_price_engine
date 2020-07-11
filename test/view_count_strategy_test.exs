@@ -20,6 +20,7 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
     test "count", %{state: state} do
       state
       |> Reducer.increment()
+      |> has(:views, 2)
       |> Reducer.count()
       |> is(2)
 
