@@ -6,7 +6,7 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
       ceiling: [type: :pos_integer],
       currency: [default: :USD, type: :atom],
       decrement: [required: true, type: :pos_integer],
-      floor: [type: :pos_integer, default: 0],
+      floor: [type: :pos_integer, default: 1],
       id: [type: :string, required: true],
       increment: [required: true, type: :pos_integer],
       price: [default: 0],
