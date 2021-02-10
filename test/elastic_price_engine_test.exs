@@ -1,9 +1,10 @@
 defmodule ElasticPriceEngineTest do
   use ExUnit.Case, async: true
+
   doctest ElasticPriceEngine
 
   alias ElasticPriceEngine, as: Engine
-  alias ElasticPriceEngine.ViewCountStrategy, as: Strategy
+  alias Engine.ViewCountStrategy, as: Strategy
 
   @default_strategy_opts [increment: 100, decrement: 100, step: 3]
 
