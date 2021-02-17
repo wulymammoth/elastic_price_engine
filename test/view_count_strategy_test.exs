@@ -44,9 +44,11 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
 
     test "ceiling", %{state: state} do
       state =
-        Enum.reduce(1..3, %{state | views: 165, price: 5400, ceiling: 5500}, fn _, st ->
-          Reducer.increment(st)
-        end)
+        Enum.reduce(
+          1..3,
+          %{state | views: 165, price: 5400, ceiling: 5500},
+          fn _, st -> Reducer.increment(st) end
+        )
 
       assert Reducer.count(state) == 168
       assert Reducer.amount(state) == usd(55)
@@ -90,9 +92,11 @@ defmodule ElasticPriceEngine.ViewCountStrategyTest do
 
     test "floor", %{state: state} do
       state =
-        Enum.reduce(1..4, %{state | floor: 100, views: 4, price: 200}, fn _, st ->
-          Reducer.decrement(st)
-        end)
+        Enum.reduce(
+          1..4,
+          %{state | floor: 100, views: 4, price: 200},
+          fn _, st -> Reducer.decrement(st) end
+        )
 
       assert Reducer.count(state) == 0
       assert Reducer.amount(state) == usd(1)
