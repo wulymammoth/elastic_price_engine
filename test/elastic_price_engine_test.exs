@@ -55,7 +55,7 @@ defmodule ElasticPriceEngineTest do
   describe "ElasticPriceEngine.stop/1" do
     test "engine is no longer active", %{pid: pid} do
       Engine.stop(pid)
-      assert Process.alive?(pid) == false
+      refute Process.alive?(pid)
     end
   end
 
