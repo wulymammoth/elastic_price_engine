@@ -35,31 +35,28 @@ defmodule ElasticPriceEngine.ViewCountStrategy do
 
     defp price_change(:increment, %{price: price, views: 0}), do: price
 
-    defp price_change(
-           :increment,
-           %{
-             ceiling: ceiling,
-             currency: currency,
-             price: price,
-             increment: inc,
-             step: step,
-             views: views
-           }
-         ) do
-      if rem(views, step) == 0 and (is_nil(ceiling) || (ceiling && price < ceiling)) do
-        add(price, inc, currency)
-      else
-        price
+    defp price_change(:increment, state) do
+      %{ceiling: ceiling, currency: currency, price: price, increment: inc} = state
+
+      cond do
+        is_nil(ceiling) and rem(state.views, state.step) == 0 ->
+          add(price, inc, currency)
+
+        ceiling && price < ceiling ->
+          add(price, inc, currency)
+
+        true ->
+          price
       end
     end
 
     defp price_change(:decrement, %{floor: floor, price: price}) when price == floor, do: price
 
-    defp price_change(
-           :decrement,
-           %{currency: currency, decrement: dec, price: price, step: step, views: views}
-         ) do
-      if rem(views, step) == 0, do: subtract(price, dec, currency), else: price
+    defp price_change(:decrement, state = %{step: step, views: views})
+         when rem(views, step) == 0 do
+      subtract(state.price, state.decrement, state.currency)
     end
+
+    defp price_change(:decrement, %{price: price}), do: price
   end
 end
